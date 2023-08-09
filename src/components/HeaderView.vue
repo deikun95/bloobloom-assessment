@@ -1,37 +1,39 @@
+<template>
+  <header>
+    <div class="navbar">
+      <a class="menu"><span>menu</span></a>
+      <div class="sidebar">
+        <ul class="list">
+          <li class="list-item">spectacles
+            <RightArrowIcon />
+          </li>
+          <li class="list-item">sunglases
+            <RightArrowIcon />
+          </li>
+          <li class="list-item">home try on</li>
+          <li class="list-item">pair for fair</li>
+        </ul>
+      </div>
+      <LogoIcon />
+      <div></div>
+    </div>
+  </header>
+</template>
+
 <script setup lang="ts">
 import LogoIcon from '../assets/icons/LogoIcon.vue'
 import RightArrowIcon from '../assets/icons/RightArrowIcon.vue'
 </script>
 
-<template>
-  <div class="navbar">
-    <a class="menu"><span>menu</span></a>
-    <div class="sidebar">
-      <ul class="list">
-        <li class="list-item">spectacles
-          <RightArrowIcon />
-        </li>
-        <li class="list-item">sunglases
-          <RightArrowIcon />
-        </li>
-        <li class="list-item">home try on</li>
-        <li class="list-item">pair for fair</li>
-      </ul>
-    </div>
-    <LogoIcon />
-    <div></div>
-  </div>
-  <div class="wrapper">
-    <div></div>
-    <div class="title">SPECTACLES WOMEN</div>
-    <div class="filter">
-      <div class="color">colour</div>
-      <div class="shape">shape</div>
-    </div>
-  </div>
-</template>
-
 <style scoped>
+header {
+  position: fixed;
+  background-color: white;
+  width: 100%;
+  top: 0;
+  z-index: 3;
+}
+
 .navbar {
   position: relative;
   height: 60px;
@@ -94,6 +96,7 @@ import RightArrowIcon from '../assets/icons/RightArrowIcon.vue'
     border-bottom: 1px solid;
     cursor: pointer;
     color: black;
+    font-size: 16px;
 
     &:hover {
       background-color: black;
@@ -104,7 +107,7 @@ import RightArrowIcon from '../assets/icons/RightArrowIcon.vue'
 
 
 .wrapper {
-  height: 60px;
+  min-height: 60px;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
@@ -116,11 +119,36 @@ import RightArrowIcon from '../assets/icons/RightArrowIcon.vue'
     border-right: 1px solid black;
   }
 
-  .filter {
+  .filter-buttons {
     display: flex;
     height: 100%;
     font-size: 15px;
     line-height: 18px;
+
+
+    border-right: 1px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 25%;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+
+    }
+  }
+
+  .filter {
+    grid-column: 1 / span 3;
+    box-shadow: 0px 0px 0px 0px black;
+    height: 0;
+    transition: box-shadow .3s ease-in, height .2s ease-in;
+
+    &.expanded {
+      height: 60px;
+      box-shadow: 0px 0px 0px 1px black;
+    }
   }
 
   .title {
@@ -128,44 +156,15 @@ import RightArrowIcon from '../assets/icons/RightArrowIcon.vue'
     font-size: 25px;
     line-height: 30px;
     border: 1px solid;
-    height: 100%;
+    height: 60px;
+    border-bottom: 0;
+    border-top: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: -2px;
-  }
 
-  .color {
-    border-right: 1px solid;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 25%;
-  }
-
-  .shape {
-    border-right: 1px solid;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    width: 25%;
   }
 }
 
-/* tr {
-  height: 60px;
-}
-
-.filter>td {
-  height: 60px;
-}
-
-.color {
-  border: none;
-}
-
-.shape {
-  border-top: none;
-  border-bottom: none;
-} */
 </style>
