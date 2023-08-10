@@ -1,17 +1,42 @@
 <template>
   <header>
     <div class="navbar">
-      <a class="menu"><span>menu</span></a>
-      <div class="sidebar">
+      <a
+        class="menu"
+        @mouseenter="handleSidebar(true)"
+        @mouseleave="handleSidebar(false)"
+        ><span>menu</span></a
+      >
+      <div
+        :class="['sidebar', isSidebarOpened ? 'open' : 'hidden']"
+        @mouseenter="handleSidebar(true)"
+        @mouseleave="handleSidebar(false)"
+      >
         <ul class="list">
-          <li class="list-item">spectacles
-            <RightArrowIcon />
+          <li
+            v-if="!currentMenuItems.isMain"
+            class="list-item"
+            @click="setMenuItem(menuItems)"
+          >
+            <span class="list-item-icon-left">
+              <LeftArrowIcon />
+            </span>
+            <span>GO BACK</span>
           </li>
-          <li class="list-item">sunglases
-            <RightArrowIcon />
+          <li
+            v-for="(item, index) in currentMenuItems.children"
+            :key="index"
+            class="list-item"
+            @click="handleMenuItemClick(item)"
+          >
+            <span>{{ item.name }}</span>
+            <span
+              v-if="item.withArrow"
+              class="list-item-icon-right"
+            >
+              <RightArrowIcon />
+            </span>
           </li>
-          <li class="list-item">home try on</li>
-          <li class="list-item">pair for fair</li>
         </ul>
       </div>
       <LogoIcon />
@@ -21,8 +46,79 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import LogoIcon from '../assets/icons/LogoIcon.vue'
 import RightArrowIcon from '../assets/icons/RightArrowIcon.vue'
+import LeftArrowIcon from '../assets/icons/LeftArrowIcon.vue'
+import { useApiStore } from '@/stores/api'
+import { collections } from '@/stores/api'
+
+const apiStore = useApiStore()
+
+const isSidebarOpened = ref(false)
+
+const menuItems = {
+  isMain: true,
+  children: [
+    {
+      name: 'Woman',
+      children: [
+        {
+          name: 'Spectacles',
+          isChild: true,
+          withArrow: true,
+          action: () => apiStore.setCollection(collections.SPECTACLES_WOMAN)
+        },
+        {
+          name: 'Sunglases',
+          isChild: true,
+          withArrow: true,
+          action: () => apiStore.setCollection(collections.SUNGLASES_WOMAN)
+        }
+      ],
+      withArrow: true
+    },
+    {
+      name: 'Men',
+      children: [
+        {
+          name: 'Spectacles',
+          isChild: true,
+          withArrow: true,
+          action: () => apiStore.setCollection(collections.SPECTACLES_MEN)
+        },
+        {
+          name: 'Sunglases',
+          isChild: true,
+          withArrow: true,
+          action: () => apiStore.setCollection(collections.SUNGLASES_MEN)
+        }
+      ],
+      withArrow: true
+    },
+    { name: 'Home try on' },
+    { name: 'Pair for fair' }
+  ]
+}
+
+const currentMenuItems = ref(menuItems)
+
+const setMenuItem = (value: any) => {
+  console.log(value)
+  currentMenuItems.value = value
+}
+
+const handleMenuItemClick = (item: any) => {
+  if (item.children) setMenuItem(item)
+  if (item.action) {
+    item.action()
+    handleSidebar(false)
+  }
+}
+
+const handleSidebar = (state: boolean) => {
+  isSidebarOpened.value = state
+}
 </script>
 
 <style scoped>
@@ -32,11 +128,12 @@ header {
   width: 100%;
   top: 0;
   z-index: 3;
+  border-bottom: 1px solid;
 }
 
 .navbar {
   position: relative;
-  height: 60px;
+  height: 50px;
   display: grid;
   grid-auto-flow: column;
   align-items: center;
@@ -48,39 +145,43 @@ header {
 
   .menu {
     margin-right: auto;
-    padding: 0 0 0 32px;
-    height: 100%;
     display: flex;
+    justify-content: center;
+    border-right: 1px solid;
+    height: 100%;
     align-items: center;
-    width: 60px;
-    transition: ease-in .2 text-decoration;
+    width: 160px;
+    transition: ease-in 0.2s text-decoration;
     cursor: pointer;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14px;
+    letter-spacing: 2px;
 
     &:hover {
       text-decoration: underline;
-
-      &+.sidebar {
-        transform: translateX(0%);
-      }
     }
   }
 }
 
 .sidebar {
-  transition: ease-in .3s transform;
+  transition: ease-in 0.2s transform;
   transition-delay: 250ms;
-  transform: translateX(-100%);
   position: absolute;
   left: 0;
-  top: 60px;
-  width: 300px;
+  top: 50px;
+  width: 479px;
   background-color: white;
   border: 1px solid;
   height: 100vh;
   z-index: 1;
 
-  &:hover {
+  &.open {
     transform: translateX(0%);
+  }
+
+  &.hidden {
+    transform: translateX(-100%);
   }
 }
 
@@ -89,7 +190,7 @@ header {
   padding: 0;
 
   .list-item {
-    padding: 0 0 0 16px;
+    padding: 0 16px;
     height: 60px;
     display: flex;
     align-items: center;
@@ -98,13 +199,20 @@ header {
     color: black;
     font-size: 16px;
 
+    .list-item-icon-right {
+      margin-left: auto;
+    }
+
+    .list-item-icon-left {
+      margin-right: auto;
+    }
+
     &:hover {
       background-color: black;
       color: white;
     }
   }
 }
-
 
 .wrapper {
   min-height: 60px;
@@ -125,7 +233,6 @@ header {
     font-size: 15px;
     line-height: 18px;
 
-
     border-right: 1px solid;
     display: flex;
     align-items: center;
@@ -135,7 +242,6 @@ header {
 
     &:hover {
       text-decoration: underline;
-
     }
   }
 
@@ -143,7 +249,9 @@ header {
     grid-column: 1 / span 3;
     box-shadow: 0px 0px 0px 0px black;
     height: 0;
-    transition: box-shadow .3s ease-in, height .2s ease-in;
+    transition:
+      box-shadow 0.3s ease-in,
+      height 0.2s ease-in;
 
     &.expanded {
       height: 60px;
@@ -163,8 +271,6 @@ header {
     align-items: center;
     justify-content: center;
     margin-right: -2px;
-
   }
 }
-
 </style>

@@ -2,17 +2,45 @@
   <div class="header-wrapper">
     <div class="header-main">
       <div></div>
-      <div class="title">SPECTACLES WOMEN</div>
-      <div class="filter-buttons" @click="setShowFilters">
+      <div class="title">
+        {{ apiStore.currentCollection.replace('-', ' ') }}
+      </div>
+      <div
+        class="filter-buttons"
+        @click="setShowFilters"
+      >
         <span>filters</span>
+        <div class="filter-icon">
+          <FilterIcon></FilterIcon>
+          <div :class="['icon-knobs', { active: showFilters }]">
+            <div class="first-knob">
+              <div></div>
+            </div>
+            <div class="second-knob">
+              <div></div>
+            </div>
+            <div class="third-knob">
+              <div></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div :class="['filter', { expanded: showFilters }]">
       <div class="filter-items">
         <div class="filter-item">
           <div class="filter-title">Colour</div>
-          <div class="filter-body" @click="(event) => handleFilterClick(event, 'glass_variant_frame_variant_colour_tag_configuration_names', event.target?.innerText)
-            ">
+          <div
+            class="filter-body"
+            @click="
+              (event) =>
+                handleFilterClick(
+                  event,
+                  'glass_variant_frame_variant_colour_tag_configuration_names',
+                  (event.target as HTMLDivElement).innerText
+                )
+            "
+          >
             <span>Black</span>
             <span>Tortoise</span>
             <span>Coloured</span>
@@ -23,8 +51,17 @@
         </div>
         <div class="filter-item">
           <div class="filter-title">Shape</div>
-          <div class="filter-body"
-            @click="(event) => handleFilterClick(event, 'glass_variant_frame_variant_frame_tag_configuration_names', event.target?.innerText)">
+          <div
+            class="filter-body"
+            @click="
+              (event) =>
+                handleFilterClick(
+                  event,
+                  'glass_variant_frame_variant_frame_tag_configuration_names',
+                  (event.target as HTMLDivElement).innerText
+                )
+            "
+          >
             <span>Square</span>
             <span>Rectangle</span>
             <span>Round</span>
@@ -33,63 +70,68 @@
         </div>
       </div>
       <div class="filter-result">
-        <div class="chosen-filters"><span class="chosen-item"
-            v-for="(item, index) in Object.values(filters).flatMap(set => [...set])" :key="index">{{ item }}</span></div>
-        <span>{{ items.length }} RESULTS FOUND</span>
+        <div class="chosen-filters">
+          <span
+            v-for="(item, index) in Object.values(filters).flatMap((set) => [
+              ...set
+            ])"
+            :key="index"
+            class="chosen-item"
+            >{{ item }}</span
+          >
+        </div>
+        <span>{{ apiStore.items.length }} RESULTS FOUND</span>
       </div>
     </div>
   </div>
-  <div class='body-wrapper'>
-    <div class="item" v-for="( item, index ) in  items " :key="index">
+  <div class="body-wrapper">
+    <div
+      v-for="(item, index) in apiStore.items"
+      :key="index"
+      class="item"
+    >
       <div class="title">{{ item.glass_variants[0].frame_variant.name }}</div>
-      <img :src="item.glass_variants[0].media[0].url" alt="glasses view">
+      <img
+        :src="item.glass_variants[0].media[0].url"
+        alt="glasses view"
+        loading="lazy"
+      />
     </div>
   </div>
-  <div class="preloader">
+  <div
+    v-if="apiStore.loading"
+    class="preloader"
+  >
     Loading...
+  </div>
+  <div
+    v-else
+    class="top-button"
+  >
+    Back to top
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
-import { debounce } from '../utils/debounce.ts'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { debounce } from '@/utils/debounce'
+import { useApiStore } from '@/stores/api'
+import FilterIcon from '../assets/icons/FilterIcon.vue'
+
+const apiStore = useApiStore()
 
 const showFilters = ref(false)
-const setShowFilters = () => showFilters.value = !showFilters.value
+const setShowFilters = () => (showFilters.value = !showFilters.value)
 
-const items = ref<any[]>([]);
-const loading = ref(false);
-const limit = ref(12)
-const page = ref(0)
-const queryFilterString = ref("")
-const filters = reactive<Record<string, Set<string>>>({ glass_variant_frame_variant_frame_tag_configuration_names: new Set(), glass_variant_frame_variant_colour_tag_configuration_names: new Set() })
+const filters = reactive<Record<string, Set<string>>>({
+  glass_variant_frame_variant_frame_tag_configuration_names: new Set(),
+  glass_variant_frame_variant_colour_tag_configuration_names: new Set()
+})
 
-const debounceFetchData = debounce(() => fetchMoreData(true))
-
-const fetchMoreData = async (fromFilter = false) => {
-  loading.value = true;
-
-  if (!fromFilter) {
-    page.value += 1
-  }
-
-  const jsonResponse = await fetch(`https://staging-api.bloobloom.com/user/v1/sales_channels/website/collections/spectacles-women/glasses?page[limit]=${limit.value}&page[number]=${page.value}${queryFilterString.value}`)
-  const data = await jsonResponse.json()
-
-  if (fromFilter) {
-    items.value = [...data.glasses]
-  } else {
-    data.glasses.forEach(item => {
-      const hasItem = items.value.find(i => i.id === item.id)
-
-      if (!hasItem) items.value.push(item)
-    });
-  }
-
-  console.log(items.value)
-  loading.value = false;
-
-};
+const debounceFetchData = debounce(
+  () => apiStore.fetchMoreData(true, apiStore.currentCollection),
+  500
+)
 
 const setFilter = (key: string, value: string) => {
   if (!filters[key].has(value)) {
@@ -98,43 +140,50 @@ const setFilter = (key: string, value: string) => {
     filters[key].delete(value)
   }
 
-  if (queryFilterString.value.includes(`&filters[${key}][]=${value.toLowerCase()}`)) {
-    queryFilterString.value = queryFilterString.value.replace(`&filters[${key}][]=${value.toLowerCase()}`, "")
+  if (
+    apiStore.queryFilterString.includes(
+      `&filters[${key}][]=${value.toLowerCase()}`
+    )
+  ) {
+    apiStore.queryFilterString = apiStore.queryFilterString.replace(
+      `&filters[${key}][]=${value.toLowerCase()}`,
+      ''
+    )
   } else {
-    queryFilterString.value += `&filters[${key}][]=${value.toLowerCase()}`
+    apiStore.queryFilterString += `&filters[${key}][]=${value.toLowerCase()}`
   }
 
   debounceFetchData()
 }
 
 const handleFilterClick = (event: MouseEvent, key: string, value: string) => {
-  const nodes: (Element | null)[] = [...document.getElementsByClassName('filter-body')]
+  const nodes: (Element | null)[] = [
+    ...document.getElementsByClassName('filter-body')
+  ]
 
-  if (nodes.includes(event.target as Element)) return;
+  if (nodes.includes(event.target as Element)) return
   console.log(key, value)
   setFilter(key, value)
 }
 
 const handleScroll = () => {
-  if (
-    window.innerHeight + window.scrollY >= document.body.offsetHeight
-  ) {
-    fetchMoreData();
+  if (apiStore.totalCount === apiStore.items.length) return
+
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+    apiStore.fetchMoreData(false, apiStore.currentCollection)
   }
-};
+}
 
 const debouncedScroll = debounce(handleScroll)
 
 onMounted(() => {
-  fetchMoreData();
-  window.addEventListener('scroll', debouncedScroll);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', debouncedScroll);
+  apiStore.fetchMoreData(false, apiStore.currentCollection)
+  window.addEventListener('scroll', debouncedScroll)
 })
 
-
+onUnmounted(() => {
+  window.removeEventListener('scroll', debouncedScroll)
+})
 </script>
 
 <style scoped>
@@ -142,7 +191,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  transition: transform .2s ease-in;
+  transition: transform 0.2s ease-in;
 
   .item {
     width: 504px;
@@ -159,7 +208,7 @@ onUnmounted(() => {
 }
 
 .header-wrapper {
-  margin-top: 60px;
+  margin-top: 50px;
   min-height: 60px;
   overflow: hidden;
 
@@ -182,9 +231,9 @@ onUnmounted(() => {
   .filter-buttons {
     display: flex;
     height: 100%;
+    font-weight: 700;
     font-size: 15px;
-    line-height: 18px;
-
+    line-height: 24px;
 
     border-right: 1px solid;
     display: flex;
@@ -203,7 +252,9 @@ onUnmounted(() => {
     grid-column: 1 / span 3;
     border-bottom: 1px solid;
     height: 0;
-    transition: box-shadow .3s ease-in, height .2s ease-in;
+    transition:
+      box-shadow 0.3s ease-in,
+      height 0.2s ease-in;
     position: relative;
     margin-bottom: -1px;
 
@@ -221,7 +272,6 @@ onUnmounted(() => {
       }
     }
 
-
     .filter-items {
       display: grid;
       grid-auto-flow: column;
@@ -238,7 +288,7 @@ onUnmounted(() => {
       font-size: 15px;
       line-height: 18px;
 
-      &>span {
+      & > span {
         margin-left: -74px;
       }
     }
@@ -249,14 +299,12 @@ onUnmounted(() => {
     }
 
     .filter-item {
-
       .filter-title {
         height: 60px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-bottom: 1px solid;
-
       }
 
       .filter-body {
@@ -264,7 +312,7 @@ onUnmounted(() => {
         grid-template-columns: repeat(6, 1fr);
         padding: 22px;
 
-        &>span:hover {
+        & > span:hover {
           cursor: pointer;
           text-decoration: underline;
         }
@@ -272,7 +320,6 @@ onUnmounted(() => {
     }
 
     .filter-item:first-child {
-
       .filter-title {
         border-right: 1px solid;
       }
@@ -295,9 +342,64 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     margin-right: -2px;
-
   }
+}
 
+.filter-icon {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  margin-left: 5px;
+  .icon-knobs {
+    top: 0;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+
+    &.active {
+      .first-knob,
+      .third-knob {
+        transform: translateY(-7px);
+      }
+
+      .second-knob {
+        transform: translateY(7px);
+      }
+    }
+
+    .first-knob,
+    .second-knob,
+    .third-knob {
+      transition: all 0.2s ease;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      width: 6px;
+      height: 6px;
+      & > div {
+        width: 100%;
+        height: 2px;
+        background: #000;
+      }
+    }
+
+    .first-knob {
+      left: 1px;
+      top: 11px;
+    }
+
+    .second-knob {
+      left: 8px;
+      top: 4px;
+    }
+
+    .third-knob {
+      left: 15px;
+      top: 11px;
+    }
+  }
 }
 
 img {
@@ -306,11 +408,30 @@ img {
 }
 
 .preloader {
-  animation: fadeAnimation 1s ease-in-out infinite;
+  animation: fadeAnimation 1s ease infinite;
   text-align: center;
   margin-top: 100px;
   height: 100px;
   overflow-y: auto;
+}
+
+.top-button {
+  margin: 100px auto;
+  cursor: pointer;
+  width: 200px;
+  height: 50px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  text-transform: uppercase;
+  background: #fff;
+  color: #000;
+  border: 1px solid #000;
 }
 
 @keyframes fadeAnimation {

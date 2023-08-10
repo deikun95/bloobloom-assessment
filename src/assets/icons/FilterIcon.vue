@@ -1,0 +1,37 @@
+<template>
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 2 22"
+    fill="none"
+    data-v-9b5abe68=""
+  >
+    <line
+      x1="-6"
+      y1="4.3711e-08"
+      x2="-6"
+      y2="22"
+      stroke="black"
+      stroke-width="2"
+      data-v-9b5abe68=""
+    ></line>
+    <line
+      x1="1"
+      y1="4.3711e-08"
+      x2="1"
+      y2="22"
+      stroke="black"
+      stroke-width="2"
+      data-v-9b5abe68=""
+    ></line>
+    <line
+      x1="8"
+      y1="4.3711e-08"
+      x2="8"
+      y2="22"
+      stroke="black"
+      stroke-width="2"
+      data-v-9b5abe68=""
+    ></line>
+  </svg>
+</template>
