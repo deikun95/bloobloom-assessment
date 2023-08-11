@@ -12,5 +12,8 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest'
+  },
+  rules: {
+    "vue/no-unused-properties": "warn"
   }
 }

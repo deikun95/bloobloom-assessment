@@ -1,11 +1,11 @@
 <template>
-  <HeaderView />
-  <MainView />
+  <HeaderSection />
+  <BodySection />
 </template>
 
 <script setup lang="ts">
-import HeaderView from './components/HeaderView.vue'
-import MainView from './components/MainView.vue'
+import HeaderSection from './components/HeaderSection.vue'
+import BodySection from './components/BodySection.vue'
 </script>
 
 <style>

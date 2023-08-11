@@ -3,9 +3,8 @@
     <div class="navbar">
       <a
         class="menu"
-        @mouseenter="handleSidebar(true)"
-        @mouseleave="handleSidebar(false)"
-        ><span>menu</span></a
+        v-bind="isMobile() ? menuHandlers.mobile : menuHandlers.desktop"
+        ><span>Menu</span></a
       >
       <div
         :class="['sidebar', isSidebarOpened ? 'open' : 'hidden']"
@@ -57,6 +56,8 @@ const apiStore = useApiStore()
 
 const isSidebarOpened = ref(false)
 
+const isMobile = () => screen.width <= 768
+
 const menuItems = {
   isMain: true,
   children: [
@@ -104,7 +105,6 @@ const menuItems = {
 const currentMenuItems = ref(menuItems)
 
 const setMenuItem = (value: any) => {
-  console.log(value)
   currentMenuItems.value = value
 }
 
@@ -118,6 +118,17 @@ const handleMenuItemClick = (item: any) => {
 
 const handleSidebar = (state: boolean) => {
   isSidebarOpened.value = state
+}
+
+const menuHandlers = {
+  desktop: {
+    onmouseenter: () => handleSidebar(true),
+    onmouseleave: () => handleSidebar(false)
+  },
+  mobile: {
+    onclick: () => handleSidebar(!isSidebarOpened.value),
+    onmouseleave: () => handleSidebar(false)
+  }
 }
 </script>
 
@@ -162,6 +173,19 @@ header {
       text-decoration: underline;
     }
   }
+
+  @media screen and (max-width: 494px) {
+    .menu {
+      font-size: 10px;
+      line-height: 12px;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .navbar {
+    height: 40px;
+  }
 }
 
 .sidebar {
@@ -176,6 +200,10 @@ header {
   height: 100vh;
   z-index: 1;
 
+  @media screen and (max-width: 494px) {
+    width: 100%;
+  }
+
   &.open {
     transform: translateX(0%);
   }
@@ -183,94 +211,48 @@ header {
   &.hidden {
     transform: translateX(-100%);
   }
-}
+  .list {
+    margin: 0;
+    padding: 0;
 
-.list {
-  margin: 0;
-  padding: 0;
-
-  .list-item {
-    padding: 0 16px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid;
-    cursor: pointer;
-    color: black;
-    font-size: 16px;
-
-    .list-item-icon-right {
-      margin-left: auto;
-    }
-
-    .list-item-icon-left {
-      margin-right: auto;
-    }
-
-    &:hover {
-      background-color: black;
-      color: white;
-    }
-  }
-}
-
-.wrapper {
-  min-height: 60px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  align-items: center;
-  border: 1px solid black;
-
-  .cell {
-    border-left: 1px solid black;
-    height: 100%;
-    border-right: 1px solid black;
-  }
-
-  .filter-buttons {
-    display: flex;
-    height: 100%;
-    font-size: 15px;
-    line-height: 18px;
-
-    border-right: 1px solid;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 25%;
-    cursor: pointer;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  .filter {
-    grid-column: 1 / span 3;
-    box-shadow: 0px 0px 0px 0px black;
-    height: 0;
-    transition:
-      box-shadow 0.3s ease-in,
-      height 0.2s ease-in;
-
-    &.expanded {
+    .list-item {
+      padding: 0 16px;
       height: 60px;
-      box-shadow: 0px 0px 0px 1px black;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid;
+      cursor: pointer;
+      color: black;
+      font-size: 16px;
+
+      @media screen and (max-width: 768px) {
+        height: 50px;
+      }
+
+      @media screen and (max-width: 494px) {
+        font-size: 15px;
+        line-height: 18px;
+      }
+
+      .list-item-icon-right {
+        margin-left: auto;
+      }
+
+      .list-item-icon-left {
+        margin-right: auto;
+      }
+
+      &:hover {
+        background-color: black;
+        color: white;
+      }
     }
   }
+}
 
-  .title {
-    font-weight: 700;
-    font-size: 25px;
-    line-height: 30px;
-    border: 1px solid;
-    height: 60px;
-    border-bottom: 0;
-    border-top: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: -2px;
+@media screen and (max-width: 768px) {
+  .sidebar {
+    top: 40px;
   }
 }
 </style>
