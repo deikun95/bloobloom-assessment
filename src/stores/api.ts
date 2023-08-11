@@ -41,8 +41,8 @@ export const useApiStore = defineStore('api', () => {
     if (fromFilter) {
       items.value = [...data.glasses]
     } else {
-      data.glasses.forEach((item) => {
-        const hasItem = items.value.find((i) => i.id === item.id)
+      data.glasses.forEach((item: any) => {
+        const hasItem = items.value.find((i: any) => i.id === item.id)
 
         if (!hasItem) items.value.push(item)
       })
